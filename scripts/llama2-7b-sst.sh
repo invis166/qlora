@@ -18,7 +18,6 @@ python sst2_finetune/qlora.py \
     --remove_unused_columns False \
     --do_train \
     --do_eval \
-    --do_mmlu_eval \
     --lora_r 64 \
     --lora_alpha 16 \
     --lora_modules all \
@@ -29,7 +28,6 @@ python sst2_finetune/qlora.py \
     --warmup_ratio 0.03 \
     --lr_scheduler_type constant \
     --gradient_checkpointing \
-    --dataset oasst1 \
     --source_max_len 16 \
     --target_max_len 512 \
     --per_device_train_batch_size 1 \
