@@ -40,8 +40,8 @@ from peft import (
 from peft.tuners.lora import LoraLayer
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
-from sst2_finetune.arguments import DataArguments, GenerationArguments, ModelArguments, TrainingArguments
-from sst2_finetune.data_preparation import make_data_module
+from arguments import DataArguments, GenerationArguments, ModelArguments, TrainingArguments
+from data_preparation import make_data_module
 
 
 def is_ipex_available():
