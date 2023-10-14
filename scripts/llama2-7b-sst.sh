@@ -23,7 +23,7 @@ python sst2_finetune/qlora.py \
     --lora_modules all \
     --double_quant \
     --quant_type nf4 \
-    --bf16 \
+    --fp16 \
     --bits 4 \
     --warmup_ratio 0.03 \
     --lr_scheduler_type constant \
