@@ -105,7 +105,7 @@ class TrainingArguments(transformers.Seq2SeqTrainingArguments):
     save_steps: int = field(default=250, metadata={"help": 'How often to save a model'})
     save_total_limit: int = field(default=40, metadata={"help": 'How many checkpoints to save before the oldest is overwritten'})
     evaluation_strategy: str = 'steps'
-    evaluation_steps: int = 40
+    eval_steps: int = 150
 
 
 @dataclass
