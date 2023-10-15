@@ -21,7 +21,7 @@ class DataCollatorForSequenceClassification(object):
             f"{self.tokenizer.bos_token}{example['sentence']}{self.tokenizer.eos_token}"
             for example in instances
         ]
-        labels = [example['label'] for example in instances]
+        labels = torch.tensor([example['label'] for example in instances])
 
         # Tokenize
         tokenized_sentences = self.tokenizer(
@@ -31,7 +31,7 @@ class DataCollatorForSequenceClassification(object):
             add_special_tokens=False,
         )
         # Build the input for classification
-        input_ids = tokenized_sentences['input_ids']
+        input_ids = [torch.tensor(ids) for ids in tokenized_sentences['input_ids']]
         # Apply padding
         input_ids = pad_sequence(input_ids, batch_first=True, padding_value=self.tokenizer.pad_token_id)
 
