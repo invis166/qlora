@@ -271,13 +271,13 @@ def smart_tokenizer_and_embedding_resize(
     
     if num_new_tokens > 0:
         input_embeddings_data = model.get_input_embeddings().weight.data
-        output_embeddings_data = model.get_output_embeddings().weight.data
+        # output_embeddings_data = model.get_output_embeddings().weight.data
 
         input_embeddings_avg = input_embeddings_data[:-num_new_tokens].mean(dim=0, keepdim=True)
-        output_embeddings_avg = output_embeddings_data[:-num_new_tokens].mean(dim=0, keepdim=True)
+        # output_embeddings_avg = output_embeddings_data[:-num_new_tokens].mean(dim=0, keepdim=True)
 
         input_embeddings_data[-num_new_tokens:] = input_embeddings_avg
-        output_embeddings_data[-num_new_tokens:] = output_embeddings_avg
+        # output_embeddings_data[-num_new_tokens:] = output_embeddings_avg
 
 
 def get_last_checkpoint(checkpoint_dir):
