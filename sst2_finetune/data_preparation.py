@@ -12,7 +12,6 @@ from typing import Dict, Sequence
 class DataCollatorForSequenceClassification(object):
     tokenizer: transformers.PreTrainedTokenizer
     source_max_len: int
-    target_max_len: int
     predict_with_generate: bool
 
     def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
@@ -85,7 +84,6 @@ def make_data_module(tokenizer: transformers.PreTrainedTokenizer, args) -> Dict:
     data_collator = DataCollatorForSequenceClassification(
         tokenizer=tokenizer,
         source_max_len=args.source_max_len,
-        target_max_len=args.target_max_len,
         predict_with_generate=args.predict_with_generate,
     )
 
