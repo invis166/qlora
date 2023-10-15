@@ -31,7 +31,7 @@ class DataCollatorForSequenceClassification(object):
             add_special_tokens=False,
         )
         # Build the input for classification
-        input_ids = [tokenized_sentece['input_ids'] for tokenized_sentece in tokenized_sentences]
+        input_ids = tokenized_sentences['input_ids']
         # Apply padding
         input_ids = pad_sequence(input_ids, batch_first=True, padding_value=self.tokenizer.pad_token_id)
 
