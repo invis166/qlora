@@ -28,8 +28,7 @@ python sst2_finetune/qlora.py \
     --warmup_ratio 0.03 \
     --lr_scheduler_type constant \
     --gradient_checkpointing \
-    --source_max_len 16 \
-    --target_max_len 512 \
+    --source_max_len 512 \
     --per_device_train_batch_size 1 \
     --gradient_accumulation_steps 16 \
     --max_steps 1875 \
