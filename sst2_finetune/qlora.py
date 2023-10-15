@@ -28,7 +28,7 @@ from transformers import (
     BitsAndBytesConfig,
     LlamaTokenizer
 )
-from datasets import load_dataset, Dataset
+from datasets import load_dataset, Dataset, load_metric
 import evaluate
 
 from peft import (
@@ -42,6 +42,14 @@ from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
 from arguments import DataArguments, GenerationArguments, ModelArguments, TrainingArguments
 from data_preparation import make_data_module
+
+metric = load_metric("accuracy")
+
+
+def compute_accuracy(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return metric.compute(predictions=predictions, references=labels)
 
 
 def is_ipex_available():
@@ -330,6 +338,7 @@ def train():
         model=model,
         tokenizer=tokenizer,
         args=training_args,
+        compute_metrics=compute_accuracy,
         **{k:v for k,v in data_module.items() if k != 'predict_dataset'},
     )
 
