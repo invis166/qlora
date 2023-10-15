@@ -44,7 +44,7 @@ class DataCollatorForSequenceClassification(object):
         return data_dict
 
 
-def _format_dataset(dataset, dataset_format):
+def _format_dataset(dataset):
     dataset = dataset.map(remove_column='idx')
 
     return dataset
