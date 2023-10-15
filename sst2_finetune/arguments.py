@@ -46,26 +46,6 @@ class TrainingArguments(transformers.Seq2SeqTrainingArguments):
         default=False,
         metadata={"help": "Whether to train on the input in addition to the target text."}
     )
-    mmlu_split: Optional[str] = field(
-        default='eval',
-        metadata={"help": "The MMLU split to run on"}
-    )
-    mmlu_dataset: Optional[str] = field(
-        default='mmlu-fs',
-        metadata={"help": "MMLU dataset to use: options are `mmlu-zs` for zero-shot or `mmlu-fs` for few shot."}
-    )
-    do_mmlu_eval: Optional[bool] = field(
-        default=False,
-        metadata={"help": "Whether to run the MMLU evaluation."}
-    )
-    max_mmlu_samples: Optional[int] = field(
-        default=None,
-        metadata={"help": "If set, only evaluates on `max_mmlu_samples` of the MMMLU dataset."}
-    )
-    mmlu_source_max_len: int = field(
-        default=2048,
-        metadata={"help": "Maximum source sequence length for mmlu."}
-    )
     full_finetune: bool = field(
         default=False,
         metadata={"help": "Finetune the entire model without adapters."}
