@@ -1,18 +1,13 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-from collections import defaultdict
-import copy
 import json
 import os
 from os.path import exists, join, isdir
-import sys
 from typing import Dict
 import numpy as np
-from tqdm import tqdm
 import logging
 import bitsandbytes as bnb
-import pandas as pd
 import importlib
 from packaging import version
 from packaging.version import parse
@@ -22,14 +17,14 @@ import transformers
 import argparse
 from transformers import (
     AutoTokenizer,
-    AutoModelForSequenceClassification,
+    LlamaForSequenceClassification,
+    LlamaTokenizer,
     set_seed,
     Trainer,
     BitsAndBytesConfig,
     LlamaTokenizer
 )
-from datasets import load_dataset, Dataset, load_metric
-import evaluate
+from datasets import load_metric
 
 from peft import (
     prepare_model_for_kbit_training,
@@ -146,7 +141,7 @@ def get_accelerate_model(args, checkpoint_dir):
 
     print(f'loading base model {args.model_name_or_path}...')
     compute_dtype = (torch.float16 if args.fp16 else (torch.bfloat16 if args.bf16 else torch.float32))
-    model = AutoModelForSequenceClassification.from_pretrained(
+    model = LlamaForSequenceClassification.from_pretrained(
         args.model_name_or_path,
         cache_dir=args.cache_dir,
         load_in_4bit=args.bits == 4,
@@ -182,7 +177,7 @@ def get_accelerate_model(args, checkpoint_dir):
     model.config.torch_dtype=(torch.float32 if args.fp16 else (torch.bfloat16 if args.bf16 else torch.float32))
 
     # Tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(
+    tokenizer = LlamaTokenizer.from_pretrained(
         args.model_name_or_path,
         cache_dir=args.cache_dir,
         padding_side="right",
@@ -279,13 +274,10 @@ def smart_tokenizer_and_embedding_resize(
     
     if num_new_tokens > 0:
         input_embeddings_data = model.get_input_embeddings().weight.data
-        # output_embeddings_data = model.get_output_embeddings().weight.data
 
         input_embeddings_avg = input_embeddings_data[:-num_new_tokens].mean(dim=0, keepdim=True)
-        # output_embeddings_avg = output_embeddings_data[:-num_new_tokens].mean(dim=0, keepdim=True)
 
         input_embeddings_data[-num_new_tokens:] = input_embeddings_avg
-        # output_embeddings_data[-num_new_tokens:] = output_embeddings_avg
 
 
 def get_last_checkpoint(checkpoint_dir):
