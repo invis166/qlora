@@ -21,7 +21,8 @@ class SequentialLoraTrainer(Trainer):
 
     def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
         self._freeze_lora_matrices_based_on_current_step()
-        super().training_step(model, inputs)
+
+        return super().training_step(model, inputs)
 
     def _freeze_lora_matrices_based_on_current_step(self):
         if self.state.global_step == self.last_train_step:
