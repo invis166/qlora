@@ -10,17 +10,14 @@ import logging
 import bitsandbytes as bnb
 import importlib
 from packaging import version
-from packaging.version import parse
 
 import torch
 import transformers
 import argparse
 from transformers import (
-    AutoTokenizer,
     LlamaForSequenceClassification,
     LlamaTokenizer,
     set_seed,
-    Trainer,
     BitsAndBytesConfig,
     LlamaTokenizer
 )
@@ -37,6 +34,7 @@ from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
 from arguments import DataArguments, GenerationArguments, ModelArguments, TrainingArguments
 from data_preparation import make_data_module
+from sequential_lora_trainer import SequentialLoraTrainer
 
 metric = load_metric("accuracy")
 
@@ -326,11 +324,12 @@ def train():
 
     data_module = make_data_module(tokenizer=tokenizer, args=args)
 
-    trainer = Trainer(
+    trainer = SequentialLoraTrainer(
         model=model,
         tokenizer=tokenizer,
         args=training_args,
         compute_metrics=compute_accuracy,
+        t=3,
         **{k:v for k,v in data_module.items() if k != 'predict_dataset'},
     )
 
