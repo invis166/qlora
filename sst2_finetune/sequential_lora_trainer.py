@@ -30,7 +30,7 @@ class SequentialLoraTrainer(Trainer):
 
         self._freeze_all_lora_matrices()
         for i, parameter in enumerate(self.lora_layers):
-            if i % self.state.global_step == self.t:
+            if i % (self.state.global_step + 1) == self.t:
                 parameter.requires_grad = True
 
         self.last_train_step = self.state.global_step
