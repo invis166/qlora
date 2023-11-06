@@ -24,16 +24,22 @@ class SequentialLoraTrainer(Trainer):
             return
         # we need to track a train step change because of the gradient accumulation
 
-        self._freeze_all_lora_matrices()
-        for i, layer in enumerate(self.model.layers):
-            if i % self.t == ((self.state.global_step + 1) % self.t):
+        decoder_layers = self.model.base_model.model.model.layers
+        for i, layer in enumerate(decoder_layers):
+            # if i % self.t == ((self.state.global_step + 1) % self.t): -- use this if you want to freeze every t-th layer
+            if i <= len(decoder_layers) // 2 - 1 and self.state.global_step % 2 == 0:
                 self._unfreeze_layer_lora_matrices(layer)
+            elif i > len(decoder_layers) // 2 - 1 and self.state.global_step % 2 == 1:
+                self._unfreeze_layer_lora_matrices(layer)
+            else:
+                self._freeze_layer_lora_matrices(layer)
 
         self.last_train_step = self.state.global_step
 
-    def _freeze_all_lora_matrices(self):
-        for parameter in self.lora_layers:
-            parameter.requires_grad = False
+    def _freeze_layer_lora_matrices(self, layer):
+        for parameter_name, parameter in layer.named_parameters():
+            if 'lora_' in parameter_name:
+                parameter.requires_grad = False
 
     def _unfreeze_layer_lora_matrices(self, layer):
         for parameter_name, parameter in layer.named_parameters():
