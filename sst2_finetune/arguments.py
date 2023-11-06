@@ -97,15 +97,22 @@ class TrainingArguments(transformers.Seq2SeqTrainingArguments):
     max_grad_norm: float = field(default=0.3, metadata={"help": 'Gradient clipping max norm. This is tuned and works well for all models tested.'})
     gradient_checkpointing: bool = field(default=True, metadata={"help": 'Use gradient checkpointing. You want to use this.'})
     do_train: bool = field(default=True, metadata={"help": 'To train or not to train, that is the question?'})
+    do_eval: bool = field(default=True, metadata={"help": 'Whether to eval after training'})
     lr_scheduler_type: str = field(default='constant', metadata={"help": 'Learning rate schedule. Constant a bit better than cosine, and has advantage for analysis'})
     warmup_ratio: float = field(default=0.03, metadata={"help": 'Fraction of steps to do a warmup for'})
     logging_steps: int = field(default=10, metadata={"help": 'The frequency of update steps after which to log the train loss'})
+    logging_strategy: str = field(default='steps', metadata={"help": 'The logging strategy to adopt during training. Possible values are: no, epoch, steps'})
     group_by_length: bool = field(default=True, metadata={"help": 'Group sequences into batches with same length. Saves memory and speeds up training considerably.'})
     save_strategy: str = field(default='steps', metadata={"help": 'When to save checkpoints'})
     save_steps: int = field(default=250, metadata={"help": 'How often to save a model'})
     save_total_limit: int = field(default=40, metadata={"help": 'How many checkpoints to save before the oldest is overwritten'})
-    evaluation_strategy: str = 'steps'
-    eval_steps: int = 150
+    evaluation_strategy: str = field(default='steps')
+    eval_steps: int = field(default=150)
+    debug: str = field(default="", metadata={"help": 'Example: "underflow_overflow" to watch out infs and NaNs'})
+    log_bytes_per_iteration: bool = field(default=True, metadata={"help": 'Whether to log bytes transmitted per iteration'})
+    log_bytes_total: bool = field(default=True, metadata={"help": 'Whether to log total bytes transmitted'})
+
+
 
 
 @dataclass

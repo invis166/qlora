@@ -9,6 +9,7 @@ import numpy as np
 import logging
 import bitsandbytes as bnb
 import importlib
+import warnings
 from packaging import version
 from packaging.version import parse
 
@@ -37,6 +38,7 @@ from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
 from arguments import DataArguments, GenerationArguments, ModelArguments, TrainingArguments
 from data_preparation import make_data_module
+from communication_logger import CommunicationLoggerCallback
 
 metric = load_metric("accuracy")
 
@@ -70,7 +72,7 @@ def is_ipex_available():
     return True
 
 
-if torch.cuda.is_available():   
+if torch.cuda.is_available():
     torch.backends.cuda.matmul.allow_tf32 = True
 
 logger = logging.getLogger(__name__)
@@ -139,8 +141,9 @@ def get_accelerate_model(args, checkpoint_dir):
     if args.full_finetune:
         assert args.bits in [16, 32]
 
-    print(f'loading base model {args.model_name_or_path}...')
+    print(f'Loading base model {args.model_name_or_path}...')
     compute_dtype = (torch.float16 if args.fp16 else (torch.bfloat16 if args.bf16 else torch.float32))
+    print(f'Compute dtype: {compute_dtype}')
     model = LlamaForSequenceClassification.from_pretrained(
         args.model_name_or_path,
         cache_dir=args.cache_dir,
@@ -214,7 +217,7 @@ def get_accelerate_model(args, checkpoint_dir):
             print("Loading adapters from checkpoint.")
             model = PeftModel.from_pretrained(model, join(checkpoint_dir, 'adapter_model'), is_trainable=True)
         else:
-            print(f'adding LoRA modules...')
+            print(f'Adding LoRA modules...')
             modules = find_all_linear_names(args, model)
             config = LoraConfig(
                 r=args.lora_r,
@@ -271,7 +274,7 @@ def smart_tokenizer_and_embedding_resize(
     """
     num_new_tokens = tokenizer.add_special_tokens(special_tokens_dict)
     model.resize_token_embeddings(len(tokenizer))
-    
+
     if num_new_tokens > 0:
         input_embeddings_data = model.get_input_embeddings().weight.data
 
@@ -313,6 +316,7 @@ def train():
         **vars(model_args), **vars(data_args), **vars(training_args)
     )
     print(args)
+    print('Extra args:', extra_args)
 
     checkpoint_dir, completed_training = get_last_checkpoint(args.output_dir)
     if completed_training:
@@ -321,7 +325,7 @@ def train():
     model, tokenizer = get_accelerate_model(args, checkpoint_dir)
 
     model.config.use_cache = False
-    print('loaded model')
+    print('Loaded model')
     set_seed(args.seed)
 
     data_module = make_data_module(tokenizer=tokenizer, args=args)
@@ -337,6 +341,13 @@ def train():
     # Callbacks
     if not args.full_finetune:
         trainer.add_callback(SavePeftModelCallback)
+
+    if args.log_bytes_per_iteration or args.log_bytes_total:
+        log_bytes_callback = CommunicationLoggerCallback(
+            trainer, log_per_iteration=args.log_bytes_per_iteration,
+            log_total=args.log_bytes_total,
+        )
+        trainer.add_callback(log_bytes_callback)
 
     # Verifying the datatypes and parameter counts before training.
     print_trainable_parameters(args, model)
