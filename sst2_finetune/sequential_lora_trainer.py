@@ -14,11 +14,6 @@ class SequentialLoraTrainer(Trainer):
         self.t = t
         self.last_train_step = -1  # a value that will not be equal to an any valid step number
 
-        self.lora_layers = [
-            paremeter for parameter_name, paremeter in self.model.named_parameters()
-            if 'lora_' in parameter_name
-        ]
-
     def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
         self._freeze_lora_matrices_based_on_current_step()
 
@@ -30,12 +25,17 @@ class SequentialLoraTrainer(Trainer):
         # we need to track a train step change because of the gradient accumulation
 
         self._freeze_all_lora_matrices()
-        for i, parameter in enumerate(self.lora_layers):
+        for i, layer in enumerate(self.model.layers):
             if i % self.t == ((self.state.global_step + 1) % self.t):
-                parameter.requires_grad = True
+                self._unfreeze_layer_lora_matrices(layer)
 
         self.last_train_step = self.state.global_step
 
     def _freeze_all_lora_matrices(self):
         for parameter in self.lora_layers:
             parameter.requires_grad = False
+
+    def _unfreeze_layer_lora_matrices(self, layer):
+        for parameter_name, parameter in layer.named_parameters():
+            if 'lora_' in parameter_name:
+                parameter.requires_grad = True
