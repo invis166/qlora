@@ -1,4 +1,4 @@
-python sst2_finetune/qlora.py \
+python -m sst2_finetune.qlora \
     --model_name_or_path ../models/bootlegged-llama2-7b-hf \
     --use_auth \
     --output_dir ./output/llama-2-guanaco-7b \
@@ -25,6 +25,7 @@ python sst2_finetune/qlora.py \
     --double_quant \
     --quant_type nf4 \
     --bits 4 \
+    --fp16 \
     --warmup_ratio 0.03 \
     --lr_scheduler_type constant \
     --gradient_checkpointing \
