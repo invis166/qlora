@@ -318,12 +318,6 @@ def train():
         print('Detected that training was already completed!')
 
     model, tokenizer = get_accelerate_model(args, checkpoint_dir)
-    if args.full_finetune:
-        for n, p in model.named_parameters():
-            if 'score' in n:
-                p.requires_grad = True
-            else:
-                p.requires_grad = False
 
     model.config.use_cache = False
     print('loaded model')
@@ -331,10 +325,11 @@ def train():
 
     data_module = make_data_module(tokenizer=tokenizer, args=args)
 
-    trainer = Trainer(
+    trainer = SequentialLoraTrainer(
         model=model,
         tokenizer=tokenizer,
         args=training_args,
+        t=2,
         compute_metrics=compute_accuracy,
         **{k:v for k,v in data_module.items() if k != 'predict_dataset'},
     )
