@@ -8,9 +8,11 @@ import os
 from os.path import exists, join, isdir
 from dataclasses import dataclass, field
 import sys
-from typing import Optional, Dict, Sequence
+from typing import Optional, Dict, Sequence, Union
 import warnings
 import numpy as np
+from torch import Tensor
+from torch.nn.modules.module import Module
 from tqdm import tqdm
 import logging
 import bitsandbytes as bnb
@@ -30,7 +32,6 @@ from transformers import (
     Seq2SeqTrainer,
     BitsAndBytesConfig,
     LlamaTokenizer
-
 )
 from datasets import load_dataset, Dataset
 import evaluate
@@ -212,7 +213,7 @@ class TrainingArguments(transformers.Seq2SeqTrainingArguments):
     warmup_ratio: float = field(default=0.03, metadata={"help": 'Fraction of steps to do a warmup for'})
     logging_steps: int = field(default=10, metadata={"help": 'The frequency of update steps after which to log the loss'})
     logging_strategy: str = field(default='steps', metadata={"help": 'The logging strategy to adopt during training. Possible values are: no, epoch, steps'})
-    group_by_length: bool = field(default=True, metadata={"help": 'Group sequences into batches with same length. Saves memory and speeds up training considerably.'})
+    group_by_length: bool = field(default=False, metadata={"help": 'Group sequences into batches with same length. Saves memory and speeds up training considerably.'})
     save_strategy: str = field(default='steps', metadata={"help": 'When to save checkpoints'})
     save_steps: int = field(default=250, metadata={"help": 'How often to save a model'})
     save_total_limit: int = field(default=40, metadata={"help": 'How many checkpoints to save before the oldest is overwritten'})
@@ -353,7 +354,7 @@ def get_accelerate_model(args, checkpoint_dir):
     model.config.torch_dtype=(torch.float32 if args.fp16 else (torch.bfloat16 if args.bf16 else torch.float32))
 
     # Tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(
+    tokenizer = LlamaTokenizer.from_pretrained(
         args.model_name_or_path,
         cache_dir=args.cache_dir,
         padding_side="right",
@@ -649,6 +650,12 @@ def make_data_module(tokenizer: transformers.PreTrainedTokenizer, args) -> Dict:
     if args.do_eval or args.do_predict:
         if 'eval' in dataset:
             eval_dataset = dataset['eval']
+        # elif 'validation' in dataset:
+        #     print('Using validation split for eval')
+        #     eval_dataset = dataset['validation']
+        # elif 'test' in dataset:
+        #     print('Using test split for eval')
+        #     eval_dataset = dataset['test'].shuffle(seed=args.data_seed)
         else:
             print('Splitting train dataset in train and validation according to `eval_dataset_size`')
             dataset = dataset["train"].train_test_split(
@@ -660,10 +667,11 @@ def make_data_module(tokenizer: transformers.PreTrainedTokenizer, args) -> Dict:
         if args.group_by_length:
             eval_dataset = eval_dataset.map(lambda x: {'length': len(x['input']) + len(x['output'])})
     if args.do_train:
-        train_dataset = dataset['train']
+        train_dataset = dataset['train'].shuffle(seed=args.data_seed)
         if args.max_train_samples is not None and len(train_dataset) > args.max_train_samples:
             train_dataset = train_dataset.select(range(args.max_train_samples))
         if args.group_by_length:
+            print('Grouping by length')
             train_dataset = train_dataset.map(lambda x: {'length': len(x['input']) + len(x['output'])})
 
     data_collator = DataCollatorForCausalLM(
@@ -721,6 +729,8 @@ def train():
     set_seed(args.seed)
 
     data_module = make_data_module(tokenizer=tokenizer, args=args)
+
+    data_module['train_dataset'] = data_module['train_dataset'].shuffle(seed=args.data_seed)
 
     trainer = Seq2SeqTrainer(
         model=model,

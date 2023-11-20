@@ -13,7 +13,7 @@ python -m guanaco_finetune.qlora \
     --max_eval_samples 1000 \
     --per_device_eval_batch_size 1 \
     --max_new_tokens 32 \
-    --dataloader_num_workers 3 \
+    --dataloader_num_workers 1 \
     --group_by_length \
     --logging_strategy steps \
     --remove_unused_columns False \
@@ -25,7 +25,7 @@ python -m guanaco_finetune.qlora \
     --lora_modules all \
     --double_quant \
     --quant_type nf4 \
-    --bf16 \
+    --fp16 \
     --bits 4 \
     --warmup_ratio 0.03 \
     --lr_scheduler_type constant \
