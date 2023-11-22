@@ -1,7 +1,7 @@
 python -m guanaco_finetune.qlora \
     --model_name_or_path ../models/bootlegged-llama2-7b-hf \
     --use_auth \
-    --output_dir ./output/llama-2-guanaco-7b-shuffle \
+    --output_dir ./output/llama-2-guanaco-7b-cosine \
     --logging_steps 1 \
     --report_to wandb \
     --save_strategy steps \
@@ -11,7 +11,7 @@ python -m guanaco_finetune.qlora \
     --evaluation_strategy steps \
     --eval_dataset_size 1024 \
     --max_eval_samples 1000 \
-    --per_device_eval_batch_size 4 \
+    --per_device_eval_batch_size 2 \
     --max_new_tokens 32 \
     --dataloader_num_workers 3 \
     --logging_strategy steps \
@@ -32,8 +32,8 @@ python -m guanaco_finetune.qlora \
     --dataset oasst1 \
     --source_max_len 16 \
     --target_max_len 512 \
-    --per_device_train_batch_size 4 \
-    --gradient_accumulation_steps 4 \
+    --per_device_train_batch_size 2 \
+    --gradient_accumulation_steps 8 \
     --max_steps 2216 \
     --eval_steps 221 \
     --learning_rate 0.0002 \
