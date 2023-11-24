@@ -5,17 +5,18 @@ python -m guanaco_finetune.qlora \
     --logging_steps 1 \
     --report_to wandb \
     --save_strategy steps \
-    --data_seed 84 \
-    --save_steps 500 \
-    --save_total_limit 40 \
+    --data_seed 42 \
+    --save_steps 100 \
+    --save_total_limit 10 \
     --evaluation_strategy steps \
     --eval_dataset_size 1024 \
     --max_eval_samples 1000 \
-    --per_device_eval_batch_size 4 \
+    --per_device_eval_batch_size 2 \
     --max_new_tokens 32 \
     --dataloader_num_workers 3 \
     --logging_strategy steps \
     --remove_unused_columns False \
+    --group_by_length \
     --do_train \
     --do_eval \
     --do_mmlu_eval \
@@ -32,15 +33,15 @@ python -m guanaco_finetune.qlora \
     --dataset oasst1 \
     --source_max_len 16 \
     --target_max_len 512 \
-    --per_device_train_batch_size 4 \
-    --gradient_accumulation_steps 4 \
-    --max_steps 2216 \
-    --eval_steps 221 \
+    --per_device_train_batch_size 2 \
+    --gradient_accumulation_steps 8 \
+    --max_steps 1500 \
+    --eval_steps 50 \
     --learning_rate 0.0002 \
     --adam_beta2 0.999 \
     --max_grad_norm 0.3 \
     --lora_dropout 0.1 \
     --weight_decay 0.0 \
-    --seed 1 \
+    --seed 0 \
     --log_bytes_per_iteration \
     --log_bytes_total \

@@ -213,7 +213,7 @@ class TrainingArguments(transformers.Seq2SeqTrainingArguments):
     warmup_ratio: float = field(default=0.03, metadata={"help": 'Fraction of steps to do a warmup for'})
     logging_steps: int = field(default=10, metadata={"help": 'The frequency of update steps after which to log the loss'})
     logging_strategy: str = field(default='steps', metadata={"help": 'The logging strategy to adopt during training. Possible values are: no, epoch, steps'})
-    group_by_length: bool = field(default=False, metadata={"help": 'Group sequences into batches with same length. Saves memory and speeds up training considerably.'})
+    group_by_length: bool = field(default=True, metadata={"help": 'Group sequences into batches with same length. Saves memory and speeds up training considerably.'})
     save_strategy: str = field(default='steps', metadata={"help": 'When to save checkpoints'})
     save_steps: int = field(default=250, metadata={"help": 'How often to save a model'})
     save_total_limit: int = field(default=40, metadata={"help": 'How many checkpoints to save before the oldest is overwritten'})
@@ -667,7 +667,7 @@ def make_data_module(tokenizer: transformers.PreTrainedTokenizer, args) -> Dict:
         if args.group_by_length:
             eval_dataset = eval_dataset.map(lambda x: {'length': len(x['input']) + len(x['output'])})
     if args.do_train:
-        train_dataset = dataset['train'].shuffle(seed=args.data_seed)
+        # train_dataset = dataset['train'].shuffle(seed=args.data_seed)
         if args.max_train_samples is not None and len(train_dataset) > args.max_train_samples:
             train_dataset = train_dataset.select(range(args.max_train_samples))
         if args.group_by_length:
@@ -730,7 +730,7 @@ def train():
 
     data_module = make_data_module(tokenizer=tokenizer, args=args)
 
-    data_module['train_dataset'] = data_module['train_dataset'].shuffle(seed=args.data_seed)
+    # data_module['train_dataset'] = data_module['train_dataset'].shuffle(seed=args.data_seed)
 
     trainer = Seq2SeqTrainer(
         model=model,
