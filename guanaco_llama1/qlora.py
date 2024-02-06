@@ -45,6 +45,9 @@ from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
 from communication_logger import CommunicationLoggerCallback
 
+from trainer.super_trainer import SuperTrainer
+
+
 def is_ipex_available():
     def get_major_and_minor_from_version(full_version):
         return str(version.parse(full_version).major) + "." + str(version.parse(full_version).minor)
@@ -724,10 +727,13 @@ def train():
 
     data_module = make_data_module(tokenizer=tokenizer, args=args)
 
-    trainer = Seq2SeqTrainer(
+    trainer = SuperTrainer(
         model=model,
         tokenizer=tokenizer,
         args=training_args,
+        warmup_steps=200,
+        sparse_training_steps=400,
+        sparsity=0.7,
         **{k:v for k,v in data_module.items() if k != 'predict_dataset'},
     )
 
