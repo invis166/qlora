@@ -33,9 +33,9 @@ class SuperTrainer(Trainer):
         if self._is_sparse_training:
             self._sparse_training_step(model)
 
-        super().training_step(model, inputs)
-
         self._last_global_step = self.state.global_step
+
+        return super().training_step(model, inputs)
 
     def _warmup_step(self, model: nn.Module):
         if self._last_global_step == self.state.global_step:
