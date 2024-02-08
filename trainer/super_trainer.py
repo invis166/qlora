@@ -72,8 +72,9 @@ class SuperTrainer(Trainer):
     def _get_layers_change(self, model: nn.Module) -> dict[str, float]:
         '''Calculates norm of the change of the adapters'''
         layers_change = {}
+        state_dict = model.state_dict()
         for name, adapter in self._adapters.items():
-            difference = model._parameters[name] - adapter
+            difference = state_dict[name] - adapter
             layers_change[name] = torch.trace(difference @ difference.T)
 
         return layers_change
