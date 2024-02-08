@@ -225,6 +225,11 @@ class TrainingArguments(transformers.Seq2SeqTrainingArguments):
     log_bytes_per_iteration: bool = field(default=True, metadata={"help": 'Whether to log bytes transmitted per iteration'})
     log_bytes_total: bool = field(default=True, metadata={"help": 'Whether to log total bytes transmitted'})
 
+    # sprase training
+    warmup_steps: int = field(default=100, metadata={"help": "numer of warmup steps"})
+    sparse_training_steps: int = field(default=100, metadata={"help": "number of sparse training steps"})
+    sparsity: float = field(default=0.5, metadata={"help": "fraction of trainable layers during sparse training stage"})
+
 
 
 @dataclass
@@ -731,9 +736,9 @@ def train():
         model=model,
         tokenizer=tokenizer,
         args=training_args,
-        warmup_steps=200,
-        sparse_training_steps=400,
-        sparsity=0.7,
+        warmup_steps=training_args.warmup_steps,
+        sparse_training_steps=training_args.sparse_training_steps,
+        sparsity=training_args.sparsity,
         **{k:v for k,v in data_module.items() if k != 'predict_dataset'},
     )
 
